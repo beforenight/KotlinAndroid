@@ -19,11 +19,11 @@ import javax.inject.Inject
 
 /**
  * @Author : 郭富东
- * @Date ：2018/8/3 - 11:05
+ * @Date ：2019/02/27 - 17:05
  * @Email：878749089@qq.com
- * @descriptio：
+ * @descriptio：解析数据源：http://www.0352tv.com/ 待实现
  */
-class VideoServiceImpl @Inject constructor() : VideoService {
+class VideoServiceImpl2 @Inject constructor() : VideoService {
     override fun getVideoList(callBack: VideoService.GetVideoCallBack) {
         val json = AppPrefsUtils.getString(Concant.KEY_JSON)
         if (!TextUtils.isEmpty(json)) {
@@ -34,6 +34,7 @@ class VideoServiceImpl @Inject constructor() : VideoService {
                     .execute(object : StringCallback() {
                         override fun onSuccess(response: Response<String>) {
                             val json = response.body().toString()
+                            Logger.e("首页数据：$json")
                             val document = Jsoup.parse(json)
                             //轮播图
                             val e1 = document.select("div.hy-video-slide")
@@ -41,15 +42,18 @@ class VideoServiceImpl @Inject constructor() : VideoService {
                             for (element in e1) {
                                 val subE = element.selectFirst("a[href]")
                                 val title = subE.attr("title")
-                                var link = subE.attr("href")
-                                val style = subE.attr("style")
-                                val img = style.substring(style.indexOf("url") + 4, style.indexOf(")"))
-                                link = if (link[0] == '/') link else "/$link"
-                                Logger.e("轮播图数据：link = $link")
-                                binners.add(BinnerData(title, img, link))
+                                Logger.e("轮播图数据：title = $title")
+                                if (!title.contains("伦理")) {
+                                    var link = subE.attr("href")
+                                    val style = subE.attr("style")
+                                    val img = style.substring(style.indexOf("url") + 4, style.indexOf(")"))
+                                    link = if (link[0] == '/') link else "/$link"
+                                    Logger.e("轮播图数据：link = $link")
+                                    binners.add(BinnerData(title, img, link))
+                                }
                             }
                             //取出最后两个
-                            if(binners.size >= 3){
+                            if (binners.size >= 3) {
                                 binners.removeAt(binners.size - 1)
                                 binners.removeAt(binners.size - 1)
                                 binners.removeAt(binners.size - 1)
@@ -61,7 +65,8 @@ class VideoServiceImpl @Inject constructor() : VideoService {
                             }
 
                             var videoList: MutableList<VideoItemData> = ArrayList()
-                            //新片抢先看
+                            //新片抢先看数据源已不存在
+                           /* //新片抢先看
                             val newVideoElement = document.selectFirst("div[class=hy-video-list cleafix]")
                                     .select("div[class=item] > div")
 
@@ -77,11 +82,11 @@ class VideoServiceImpl @Inject constructor() : VideoService {
                                 val link = href.substring(1, href.length)
                                 val img = subE.attr("src")
                                 videoList.add(VideoItemData(tag, Concant.ITEM_TYPE_IMG, name, img, link, types[0]))
-                            }
+                            }*/
 
                             val titleTypes = arrayOf(Concant.CATEGORY_MOVIE, Concant.CATEGORY_DINASHI, Concant.CATEGORY_ZONGYI, 0)
                             //其他分类
-                            var index = 1
+                            var index = 0
                             for (element in document.select("div[class=hy-layout clearfix]")) {
                                 var itemDatas: MutableList<VideoData> = ArrayList()
                                 for (element in element.select("div[class=clearfix] > div")) {
@@ -94,9 +99,9 @@ class VideoServiceImpl @Inject constructor() : VideoService {
                                     val img = subE.attr("src")
                                     itemDatas.add(VideoData(img, title, tag, link))
                                 }
-                                if (itemDatas.size > 3) {
+                                if (itemDatas.size >= 3) {
                                     //添加标题
-                                    val itemTitle = VideoItemData(titleTypes[index - 1])
+                                    val itemTitle = VideoItemData(titleTypes[index])
                                     itemTitle.type = Concant.ITEM_TYPE_TITLE
                                     itemTitle.title = types[index++]
                                     videoList.add(itemTitle)

@@ -5,7 +5,6 @@ import com.gfd.common.injection.component.DaggerActivityComponent
 import com.gfd.common.injection.module.ActivityMoudle
 import com.gfd.common.mvp.presenter.BasePresenter
 import com.gfd.common.mvp.view.BaseView
-import com.gfd.common.widgets.ProgressLoading
 import javax.inject.Inject
 
 /**
@@ -21,8 +20,6 @@ abstract class BaseMvpActivity<T : BasePresenter> : BaseActivity(), BaseView {
 
     protected lateinit var mActivityComponent: DaggerActivityComponent
 
-    private var mProgressLoading: ProgressLoading? = null
-
     override fun initOperate() {
         initActivityInjection()
         injectComponent()
@@ -36,25 +33,16 @@ abstract class BaseMvpActivity<T : BasePresenter> : BaseActivity(), BaseView {
     }
 
     override fun showLoading() {
-        if(mProgressLoading == null){
-            mProgressLoading = ProgressLoading(this)
-        }
-        mProgressLoading?.showLoading()
+        showDialogLoading()
     }
 
     override fun hideLoading() {
-        mProgressLoading?.hideLoading()
+        hideDialogLoading()
     }
 
     /**
      * 注册依赖对象
      */
     abstract fun injectComponent()
-
-    override fun onDestroy() {
-        mProgressLoading?.cancel()
-        mProgressLoading = null
-        super.onDestroy()
-    }
 
 }

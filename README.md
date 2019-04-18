@@ -28,11 +28,6 @@ if(isHomeModule.toBoolean()){
 * **2.主Module在开发时不依赖业务模块，只要在运行打包时才依赖，彻底避免业务模块之间的耦合**
 >通过在build.gradle配置，通过字节码插桩来实现的。
 ```
-combuild {
-    applicationName = 'com.gfd.home.app.HomeApplication'
-    isRegisterAuto = false
-}
-
 主module依赖其他模块配置在该目录下的gradle.properties中配置：
 debugComponent=Home,Crosstalk,Music,Player //debug时依赖的
 compileComponent=Home,Crosstalk,Music,Player //release时依赖的
@@ -45,7 +40,7 @@ api project(':Music')
 >这样主Module在开发时不再依赖具体的业务模块，只是使用业务模块提供的服务，所以业务模块需要实现Provider模块定义的接口，提供具体的业务。
 
 ```
-interface IApplicationLoad {
+interface IApplicationLike {
 
     /** 组件加载*/
     fun registered()
@@ -62,6 +57,9 @@ interface MusicService {
 }
 ```
 
+>组件之间页面跳转（通信）使用的是路由：**ARouter**
+
+
 ### componentrelease：文件夹
 >该文件夹存放的是业务模块的.aar包，在执行业务Module的`assembleRelease`命令后会生成对应的.aar包，也可以上传到maven仓库。这样的话主Module只需要依赖.arr包。哪个业务Module改变只需要编译哪个生成对应的.aar包即可，实现真正的组件化。
 
@@ -73,12 +71,7 @@ interface MusicService {
 
 [Jsoup](http://www.open-open.com/jsoup/)
 
-### 屏幕适配
-采用smallestWidth适配
-
->smallestWidth限定符适配和宽高限定符适配最大的区别在于，前者有很好的容错机制，如果没有对应dp文件夹，系统会向下寻找，比如离360dp最近的只有value-sw350dp，那么Android就会选择value-sw350dp文件夹下面的资源文件。这个特性就完美的解决了上文提到的宽高限定符的容错问题。
-
->[自动生成适配文件工具](https://github.com/ladingwu/dimens_sw)   [AndroidUI屏幕适配](https://www.jianshu.com/p/667cc6e0261a)
+### build文件
 
 #### [common.gradle](/common.gradle)：三方依赖库和版本管理，统一放在该文件中。
 
@@ -90,7 +83,32 @@ interface MusicService {
 
 #### [releaseinfo.gradle](/releaseinfo.gradle)：版本发布文档自动维护脚本
 
+```
+//该文档自动生成，只需要在build中配置版本更新日志。
+<?xml version="1.0" encoding="GBK"?>
+<releases>
+  <release>
+    <versionCode>1</versionCode>
+    <versionName>1.0.0</versionName>
+    <versionInfo>App的第1个版本，上线了一些最基础核心的功能。</versionInfo>
+  </release>
+
+<release>
+  <versionCode>110</versionCode>
+  <versionName>1.1.0</versionName>
+  <versionInfo>App的第2个版本，修复网络数据解析问题，处于稳定版本。</versionInfo>
+</release>
+</releases>
+```
+
 >[Gradle实战](https://www.jianshu.com/p/7e1c7164976b)
+
+### 屏幕适配
+采用smallestWidth适配
+
+>smallestWidth限定符适配和宽高限定符适配最大的区别在于，前者有很好的容错机制，如果没有对应dp文件夹，系统会向下寻找，比如离360dp最近的只有value-sw350dp，那么Android就会选择value-sw350dp文件夹下面的资源文件。这个特性就完美的解决了上文提到的宽高限定符的容错问题。
+
+>[自动生成适配文件工具](https://github.com/ladingwu/dimens_sw)   [AndroidUI屏幕适配](https://www.jianshu.com/p/667cc6e0261a)
 
 ## 模块化结构图
 
@@ -98,12 +116,13 @@ interface MusicService {
 
 >Common为公共库，主要包含一些基类和常用的工具类，Provider依赖于Common，是模块真正依赖的库。其中业务模块包括：Home，Music，User，Player。每个业务模块对应一个Module。主模块APP和业务模块都依赖Provider，主模块APP在开发阶段不再依赖具体的业务模块，彻底隔离业务模块之间的耦合。业务模块统一实现Provider中定义的接口，暴露需要提供的服务。
 
-## 首页模块效果图
+## 效果图
+### 首页模块
 ![](/screenshot/home.png)  ![](/screenshot/player.png)
 
 ![](/screenshot/search2.png)  ![](/screenshot/search1.png)
 
-## 音乐模块效果图
+### 音乐模块
 
 ![](/screenshot/music1.png)  ![](/screenshot/music2.png)
 
@@ -113,6 +132,6 @@ interface MusicService {
 
  ![](/screenshot/music3.png)  
  
- ## 电视直播，相声模块
+ ### 电视直播，相声模块
  
 ![](/screenshot/play01.png)  ![](/screenshot/crosstalk01.png)  

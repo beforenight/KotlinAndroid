@@ -12,15 +12,20 @@ android {
     //规定资源命名前缀为home_
     resourcePrefix "home_"
 
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+
+}
+
+this.beforeEvaluate {
+    println 'Home开始执行了'
+    delete buildDir
 }
 
 dependencies {
     api project(':Provider')
     kapt "com.google.dagger:dagger-compiler:$dagger_version"
     kapt "com.alibaba:arouter-compiler:$arouter_compiler_version"
-}
-
-combuild {
-    applicationName = 'com.gfd.home.app.HomeApplication'
-    isRegisterAuto = false
 }
